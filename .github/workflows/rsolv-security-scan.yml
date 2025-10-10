@@ -1,0 +1,85 @@
+# TEMPLATE: RSOLV Simple Security Scan
+#
+# ✅ PROVEN WORKING TEMPLATE - Based on successful nodegoat deployment
+# Runtime: ~52 seconds for 50-100 files
+#
+# QUICK START:
+# 1. Copy this file to: .github/workflows/rsolv-security-scan.yml
+# 2. Add secret to your repo: Settings → Secrets → Actions → New repository secret
+#    Name: RSOLV_API_KEY
+#    Value: Your RSOLV API key
+# 3. Commit and push - workflow will run automatically on push to master
+#
+# REQUIREMENTS:
+# - RSOLV_API_KEY secret (required for pattern fetching)
+# - Write permissions for issues (to create vulnerability reports)
+#
+# WHAT THIS DOES:
+# - Scans your repository for security vulnerabilities
+# - Creates GitHub Issues for findings with 'rsolv:detected' label
+# - Completes in under 1-2 minutes for typical repositories
+#
+# IMPORTANT: Use v3.7.47 or later. Earlier versions (v3.6.x) have infinite loop bugs.
+
+name: RSOLV Security Scan
+
+on:
+  # Manual trigger from Actions tab
+  workflow_dispatch:
+
+  # Automatic trigger on push to master branch
+  push:
+    branches: [master]
+    # Optional: Only run when Python files change
+    # paths:
+    #   - '**/*.py'
+
+permissions:
+  contents: read      # Read repository files
+  issues: write       # Create issues for vulnerabilities
+
+jobs:
+  security-scan:
+    runs-on: ubuntu-latest
+
+    steps:
+      # Step 1: Checkout your repository
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      # Step 2: Run RSOLV security scan
+      # This uses the published GitHub Action (recommended approach)
+      # No Docker building required - much faster!
+      - name: RSOLV Scan - Detect Vulnerabilities
+        uses: RSOLV-dev/rsolv-action@v3.7.47  # ⚠️ IMPORTANT: Use v3.7.47+
+        with:
+          rsolvApiKey: ${{ secrets.RSOLV_API_KEY }}
+          mode: 'scan'  # Options: scan, validate, mitigate, full
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}  # Automatically provided
+
+      # Step 3: Report completion
+      - name: Scan Summary
+        if: always()
+        run: |
+          echo "✅ Security scan complete"
+          echo "Check the Issues tab for vulnerabilities with 'rsolv:detected' label"
+          echo "View detailed logs in the workflow run output"
+
+# TROUBLESHOOTING:
+#
+# If workflow hangs or times out:
+# - Ensure you're using v3.7.47 or later (v3.6.x has bugs)
+# - Check that RSOLV_API_KEY secret is set correctly
+# - Verify repository doesn't have excessive files (1000+)
+#
+# Expected performance for Python/Flask apps:
+# - Docker build: ~30 seconds (cached after first run)
+# - Scanning: 5-30 seconds depending on file count
+# - Total runtime: 45-90 seconds for typical repos
+#
+# Expected vulnerabilities for Vulnerable-Flask-App:
+# - SQL injection
+# - Command injection
+# - Insecure deserialization
+# - XSS vulnerabilities
