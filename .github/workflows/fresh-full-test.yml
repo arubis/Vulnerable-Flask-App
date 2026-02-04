@@ -1,0 +1,67 @@
+name: Fresh Full Test - Flask App (RFC-103 Metrics)
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  issues: write
+  pull-requests: write
+
+jobs:
+  scan-validate-mitigate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Run RSOLV SCAN Phase
+        uses: RSOLV-dev/RSOLV-action@v3.8.74
+        id: scan
+        with:
+          mode: SCAN
+          rsolvApiKey: ${{ secrets.RSOLV_API_KEY }}
+          max_issues: 2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          RSOLV_TESTING_MODE: 'true'
+          RSOLV_FORCE_FRESH_ISSUES: 'true'
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          CLAUDE_CODE_API_KEY: ${{ secrets.CLAUDE_CODE_API_KEY }}
+
+      - name: List issues created
+        run: |
+          echo "Issues created by SCAN phase:"
+          gh issue list --state open --label "rsolv:detected" --json number,title,labels
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Run RSOLV VALIDATE Phase
+        uses: RSOLV-dev/RSOLV-action@v3.8.74
+        id: validate
+        with:
+          mode: VALIDATE
+          rsolvApiKey: ${{ secrets.RSOLV_API_KEY }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          RSOLV_TESTING_MODE: 'true'
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          CLAUDE_CODE_API_KEY: ${{ secrets.CLAUDE_CODE_API_KEY }}
+
+      - name: Run RSOLV MITIGATE Phase
+        uses: RSOLV-dev/RSOLV-action@v3.8.74
+        id: mitigate
+        with:
+          mode: MITIGATE
+          rsolvApiKey: ${{ secrets.RSOLV_API_KEY }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          RSOLV_TESTING_MODE: 'true'
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          CLAUDE_CODE_API_KEY: ${{ secrets.CLAUDE_CODE_API_KEY }}
+
+      - name: List PRs created
+        run: |
+          echo "Pull requests created:"
+          gh pr list --state open --label "rsolv:automated-fix" --json number,title,headRefName
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
