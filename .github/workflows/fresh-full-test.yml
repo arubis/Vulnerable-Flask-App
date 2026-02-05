@@ -15,7 +15,7 @@ jobs:
       - uses: actions/checkout@v4
 
       - name: Run RSOLV SCAN Phase
-        uses: RSOLV-dev/RSOLV-action@v3.8.85
+        uses: RSOLV-dev/RSOLV-action@v3
         id: scan
         with:
           mode: SCAN
@@ -23,53 +23,53 @@ jobs:
           max_issues: 2
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          RSOLV_TESTING_MODE: 'true'
-          RSOLV_FORCE_FRESH_ISSUES: 'true'
+          RSOLV_TESTING_MODE: true
+          RSOLV_FORCE_FRESH_ISSUES: true
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
           CLAUDE_CODE_API_KEY: ${{ secrets.CLAUDE_CODE_API_KEY }}
 
       - name: List issues created
         run: |
-          echo "Issues created by SCAN phase:"
-          gh issue list --state open --label "rsolv:detected" --json number,title,labels
+          echo Issues created by SCAN phase
+          gh issue list --state open --label rsolv:detected --json number,title,labels
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Run RSOLV VALIDATE Phase
-        uses: RSOLV-dev/RSOLV-action@v3.8.85
+        uses: RSOLV-dev/RSOLV-action@v3
         id: validate
         with:
           mode: VALIDATE
           rsolvApiKey: ${{ secrets.RSOLV_API_KEY }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          RSOLV_TESTING_MODE: 'true'
+          RSOLV_TESTING_MODE: true
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
           CLAUDE_CODE_API_KEY: ${{ secrets.CLAUDE_CODE_API_KEY }}
 
       - name: Check validation results
         continue-on-error: true
         run: |
-          echo "Validation results:"
-          gh issue list --state open --label "rsolv:validated" --json number,title,labels
+          echo Validation results
+          gh issue list --state open --label rsolv:validated --json number,title,labels
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Run RSOLV MITIGATE Phase
-        uses: RSOLV-dev/RSOLV-action@v3.8.85
+        uses: RSOLV-dev/RSOLV-action@v3
         id: mitigate
         with:
           mode: MITIGATE
           rsolvApiKey: ${{ secrets.RSOLV_API_KEY }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          RSOLV_TESTING_MODE: 'true'
+          RSOLV_TESTING_MODE: true
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
           CLAUDE_CODE_API_KEY: ${{ secrets.CLAUDE_CODE_API_KEY }}
 
       - name: List PRs created
         run: |
-          echo "Pull requests created:"
-          gh pr list --state open --label "rsolv:automated-fix" --json number,title,headRefName
+          echo Pull requests created
+          gh pr list --state open --json number,title,headRefName
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
