@@ -15,7 +15,7 @@ jobs:
       - uses: actions/checkout@v4
 
       - name: Run RSOLV SCAN Phase
-        uses: RSOLV-dev/RSOLV-action@v3.8.80
+        uses: RSOLV-dev/RSOLV-action@v3.8.81
         id: scan
         with:
           mode: SCAN
@@ -36,7 +36,7 @@ jobs:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Run RSOLV VALIDATE Phase
-        uses: RSOLV-dev/RSOLV-action@v3.8.80
+        uses: RSOLV-dev/RSOLV-action@v3.8.81
         id: validate
         with:
           mode: VALIDATE
@@ -48,7 +48,7 @@ jobs:
           CLAUDE_CODE_API_KEY: ${{ secrets.CLAUDE_CODE_API_KEY }}
 
       - name: Run RSOLV MITIGATE Phase
-        uses: RSOLV-dev/RSOLV-action@v3.8.80
+        uses: RSOLV-dev/RSOLV-action@v3.8.81
         id: mitigate
         with:
           mode: MITIGATE
