@@ -1,4 +1,4 @@
-name: Fresh Full Test - Flask App (RFC-103 Metrics)
+name: Fresh Full Test (SCAN-VALIDATE-MITIGATE)
 
 on:
   workflow_dispatch:
