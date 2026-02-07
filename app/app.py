@@ -224,7 +224,7 @@ def get_customer(cust_id):
     if not token:
         return jsonify({'Error': 'Not Authenticated!'}), 403
     else:
-        if not insecure_verify(token):
+        if not verify_jwt(token):
             return jsonify({'Error': 'Invalid Token'}), 403
         else:
             if cust_id:
