@@ -1,0 +1,33 @@
+name: RSOLV Security Scan
+on:
+  push:
+    branches: [master]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  issues: write
+  pull-requests: write
+  actions: read
+
+jobs:
+  rsolv:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Cache mise runtimes
+        uses: actions/cache@v4
+        with:
+          path: .mise-cache
+          key: mise-${{ runner.os }}-${{ hashFiles('**/.tool-versions', '**/.mise.toml', '**/mix.lock', '**/composer.lock', '**/pom.xml') }}
+          restore-keys: |
+            mise-${{ runner.os }}-
+
+      - uses: RSOLV-dev/RSOLV-action@v3
+        with:
+          rsolvApiKey: ${{ secrets.RSOLV_API_KEY }}
+          mode: full
+          max_issues: 1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
