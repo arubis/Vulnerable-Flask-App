@@ -106,12 +106,12 @@ def pnf(e):
     </head>
     <body>
     <h1>Oops that page doesn't exist!!</h1>
-    <h3>%s</h3>
+    <h3>{{ request_url }}</h3>
     </body>
     </html>
-    ''' % request.url
+    '''
 
-    return render_template_string(template, dir = dir, help = help, locals = locals),404
+    return render_template_string(template, request_url=request.url),404
 
 def has_no_empty_params(rule):
     default = rule.defaults if rule.defaults is not None else ()
@@ -274,11 +274,11 @@ def search_customer():
                         </head>
                         <body>
                         <h1>Oops Error Occurred</h1>
-                        <h3>%s</h3>
+                        <h3>{{ error_message }}</h3>
                         </body>
                         </html>
-                        ''' % str(e)
-                    return render_template_string(template, dir=dir, help=help, locals=locals), 404
+                        '''
+                    return render_template_string(template, error_message=str(e)), 404
 
 
 @app.route("/xxe")
