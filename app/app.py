@@ -94,9 +94,16 @@ def verify_jwt(token):
         return False
 
 def insecure_verify(token):
-    decoded = jwt.decode(token, verify = False)
-    print(decoded)
-    return True
+    try:
+        decoded = jwt.decode(token, app.config['SECRET_KEY_HMAC'], verify=True, issuer='we45', leeway=10, algorithms=['HS256'])
+        print(decoded)
+        return True
+    except DecodeError:
+        print("Error in decoding token")
+        return False
+    except MissingRequiredClaimError as e:
+        print('Claim required is missing: {0}'.format(e))
+        return False
 
 @app.errorhandler(404)
 def pnf(e):
