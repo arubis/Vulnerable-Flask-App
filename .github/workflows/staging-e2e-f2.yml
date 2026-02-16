@@ -1,0 +1,77 @@
+name: Staging E2E - RFC-096 F.2 Backend Pipeline
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  issues: write
+  pull-requests: write
+
+jobs:
+  scan-validate-mitigate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Run RSOLV SCAN Phase
+        uses: RSOLV-dev/RSOLV-action@v4.4.0-rc1
+        id: scan
+        with:
+          mode: SCAN
+          rsolvApiKey: ${{ secrets.RSOLV_STAGING_API_KEY }}
+          api_url: 'https://api.rsolv-staging.com'
+          max_issues: 2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          RSOLV_TESTING_MODE: 'true'
+          RSOLV_FORCE_FRESH_ISSUES: 'true'
+          RSOLV_API_URL: 'https://api.rsolv-staging.com'
+
+      - name: List issues created
+        run: |
+          echo "Issues created by SCAN phase:"
+          gh issue list --state open --label "rsolv:detected" --json number,title,labels
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Run RSOLV VALIDATE Phase
+        uses: RSOLV-dev/RSOLV-action@v4.4.0-rc1
+        id: validate
+        with:
+          mode: VALIDATE
+          rsolvApiKey: ${{ secrets.RSOLV_STAGING_API_KEY }}
+          api_url: 'https://api.rsolv-staging.com'
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          RSOLV_TESTING_MODE: 'true'
+          RSOLV_API_URL: 'https://api.rsolv-staging.com'
+
+      - name: Check validation branches
+        continue-on-error: true
+        run: |
+          echo "Validation branches created:"
+          git config --global --add safe.directory /github/workspace
+          git fetch origin --prune 2>/dev/null || echo "git fetch failed"
+          git branch -r | grep rsolv/validate || echo "No validation branches found"
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Run RSOLV MITIGATE Phase
+        uses: RSOLV-dev/RSOLV-action@v4.4.0-rc1
+        id: mitigate
+        with:
+          mode: MITIGATE
+          rsolvApiKey: ${{ secrets.RSOLV_STAGING_API_KEY }}
+          api_url: 'https://api.rsolv-staging.com'
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          RSOLV_TESTING_MODE: 'true'
+          RSOLV_API_URL: 'https://api.rsolv-staging.com'
+
+      - name: List PRs created
+        run: |
+          echo "Pull requests created:"
+          gh pr list --state open --label "rsolv:automated-fix" --json number,title,headRefName
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
