@@ -64,6 +64,7 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           RSOLV_TESTING_MODE: true
+          RSOLV_EDUCATIONAL_PR: 'false'
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
           CLAUDE_CODE_API_KEY: ${{ secrets.CLAUDE_CODE_API_KEY }}
 
